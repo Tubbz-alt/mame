@@ -65,8 +65,21 @@ def label_unique_masses(library_masses):
             unique[i] += 1
             temp_other_masses.remove(closest_neighbor)
             closest_neighbor = in_list(temp_other_masses, this_mass)
-    return unique + 1
+    return unique
 
+
+def combine_mix_info(name='../data/AllFeatureInfo/Mix'):
+    all_mixes = np.array(np.load('%s%i.npy' % (name, 0))[1:, :], dtype=np.float32)
+    col = np.array([0] * all_mixes.shape[0], ndmin=2).T
+    all_mixes = np.concatenate((col, all_mixes), axis=1)
+    
+    for mix in range(1, 10):
+        m = np.array(np.load('%s%i.npy' % (name, mix))[1:, :], dtype=np.float32)
+        col = np.array([mix] * m.shape[0], ndmin=2).T
+        m = np.concatenate((col, m), axis=1)
+        all_mixes = np.concatenate((all_mixes, m))
+        
+    return all_mixes
 
 #%% Scoring
 
@@ -139,31 +152,32 @@ def gen_all_vectors(all_mixes, masses, unique):
 def gen_vector(feature_info, masses_in_range, mass):
 
     passing_feat = False
-    vector = np.zeros(11, dtype=np.float64)
+    vector = np.zeros(11)
     
     if feature_info.shape[0] > 0: 
 
-        # FTICR-MS Scoring
+        # FTICR Scoring
         info = feature_info[np.where(feature_info[:, 0] == 0)[0], 1:]
         if info.shape[0] > 0:
             passing_feat = True
-            temp = instrument_points(info)
-            vector[3:5] = temp[0:2]  # Pos/neg feature count for FTICR-MS
+            temp = instrument_points(info, PARAMS[11], PARAMS[12])
+            vector[3:5] = temp[0:2]
             vector[6:8] += temp[2:]
             
             # Check for iso sig
             vector[5] = info[0, -1]
         
-        # IMS-MS Scoring
+        # IMSMS Scoring
         info = feature_info[np.where(feature_info[:, 0] == 1)[0], 1:]
+        
         if info.shape[0] > 0:
             passing_feat = True
-            temp = instrument_points(info)
-            vector[0:2] = temp[0:2]  # Pos/neg feature count for IMS-MS
-            vector[6:8] += temp[2:]  # Add to addl adducts and features
+            temp = instrument_points(info, PARAMS[5], PARAMS[6])
+            vector[0:2] = temp[0:2] # High/low int numbers for IMS MS
+            vector[6:8] += temp[2:] # Add to addl adducts and features
             
             # Check for low CCS errors
-            vector[2] = len([x for x in info[:, -1] if abs(x) <= PARAMS[5]])
+            vector[2] = len([x for x in info[:, -1] if abs(x) <= PARAMS[4]])
     
         # Other
         if passing_feat:
@@ -172,28 +186,28 @@ def gen_vector(feature_info, masses_in_range, mass):
                 vector[8] = 1
                         
             # High mass
-            if mass > PARAMS[11]:
+            if mass > PARAMS[13]:
                 vector[10] = 1
     
             # Unique mass
-            if masses_in_range == 1:  # Does not count itself
+            if masses_in_range == 1:
                 vector[9] = 1
             else: # Divide by total number of mass candidates
-                vector /= (masses_in_range + 1)
-                vector[2] *= (masses_in_range + 1) # Remultiply CCS
+                vector /= float(masses_in_range)
+                vector[2] *= masses_in_range # Remultiply CCS
 
     return vector
 
 
 # Count up evidence associated with instruments (IMSMS and FTICR)
-def instrument_points(info):
+def instrument_points(info, pos_cutoff, neg_cutoff):
     vector = np.zeros(4)
     
     # Pos adducts - count high and low intensity
-    vector[0] += _pos_neg_feature_points(info, [0, 1])
+    vector[:2] += pos_neg_feature_points(info, [0, 1], pos_cutoff)
     
     # Neg adducts - count high and low intensity
-    vector[1] += _pos_neg_feature_points(info, [2, 3])
+    vector[:2] += pos_neg_feature_points(info, [2, 3], neg_cutoff)
     
     # Additional adducts
     addl_adducts = len(list(set(info[:, 0]))) - 1
@@ -206,9 +220,13 @@ def instrument_points(info):
 
 
 # Helper function for instrument_points()
-def _pos_neg_feature_points(info, l):
+def pos_neg_feature_points(info, l, cutoff):
+    vector = np.zeros(2)
     ind = [i for i in range(info.shape[0]) if info[i, 0] in l]
-    return len(ind)
+    adducts = info[ind, :]
+    vector[0] = len([x for x in adducts[:, 2] if x > cutoff])
+    vector[1] = len(ind) - vector[0]
+    return vector
 
 
 # Count how many features (beyond the first one) there are for a given

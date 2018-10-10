@@ -24,21 +24,21 @@ MAX_FTICR_ERROR = 15  # Will need to add shift as well
 
 # Parameters that do change during optimization.
 # * = used only in ffinding, ** = used only in scoring
-PARAMS = [1000,    # 0, IMS-MS, pos min int*
-          1000,    # 1, IMS-MS, neg min int*
-          6,       # 2, IMS-MS, max mass error*
-          3,       # 3, IMS-MS, min acceptable samples*
-          1,       # 4, IMS-MS, max acceptable blanks*
-          5,       # 5, IMS-MS, max CCS error**
-          1,       # 6, FTICR-MS, pos min int*
-          1,       # 7, FTICR-MS, neg min int*
-          1.5,     # 8, FTICR-MS, max mass error*
-          1,       # 9, FTICR-MS, min samples*
-          0,       # 10, FTICR-MS, max blanks*
-          200,     # 11, High mass cutoff**
-          1,       # 12, IMS-MS, mass shift*
-          0,       # 13, FTICR-MS, mass shift*
-          0        # 14, 0 = score all matched features, 1 = score only if CCS error < PARAMS[5]*
+PARAMS = [1000, # IMS-MS, min int
+          6, # IMS-MS, max mass error
+          3, # IMS-MS, min samples
+          1, # IMS-MS, max blanks
+          5, # IMS-MS, max CCS error
+          2123, # IMS-MS, int cutoff, positive
+          2174, # IMS-MS, int cutoff, negative
+          1, # FT-ICR, min int
+          1.5, # FT-ICR, max mass error
+          1, # FT-ICR, min samples
+          0, # FT-ICR, max blanks
+          3357.7, # FT-ICR, int cutoff, positive
+          109.7, # FT-ICR, int cutoff, negative
+          200, # High mass cutoff
+          6 # Min score to be included
           ]
 
 
@@ -174,7 +174,7 @@ def find_closest(l, val):
     return min(l, key=lambda x:abs(x-val))
 
 
-def in_list(l, val, e=PARAMS[2], sorted_list=False):
+def in_list(l, val, e=PARAMS[2]/1000000., sorted_list=False):
     '''
     Checks if an element is within a given list within a given error.
     If it is found to be in the given list, returns the value closest
