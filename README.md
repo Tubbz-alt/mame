@@ -1,12 +1,14 @@
 MAME
 =======
 MAME, or Multi-Attribute Matching Engine, is a Python application programming for scoring identification confidence in targeted or untargeted mass spectrometry workflows. MAME requires features (such as those output by [``DEIMoS``]( http://github.com/pnnl/deimos) or Agilent’s MassProfiler) and a library as input, then works through each entry of the library, collecting evidence that each compound is present across the sample(s) that were run.
+
 Note: MAME is currently under construction. While the current version offered still works, we are working to remodel the way MAME operates and the scores provided to enable analysis agnostic to input data and easier interpretation of scores. Check back soon!
 
 Citing MAME
 -------------
 If you would like to reference MAME in an academic paper, we ask you include the following:
 * MAME, version 0.1.0 http://github.com/pnnl/mame (accessed MMM YYYY)
+
 Published paper [``here``]( https://pubs.acs.org/doi/abs/10.1021/acs.jcim.9b00444).
 
 Disclaimer
