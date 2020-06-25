@@ -7,7 +7,7 @@ Note: MAME is currently under construction. While the current version available 
 Citing MAME
 -------------
 If you would like to reference MAME in an academic paper, we ask you include the following:
-* MAME, version 0.1.0 http://github.com/pnnl/mame (accessed MMM YYYY)
+* MAME, version 1.0.0 http://github.com/pnnl/mame (accessed MMM YYYY)
 * Published paper [``here``]( https://pubs.acs.org/doi/abs/10.1021/acs.jcim.9b00444).
 
 Disclaimer
