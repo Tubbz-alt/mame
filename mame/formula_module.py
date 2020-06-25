@@ -8,17 +8,18 @@ Module for evaluating chemical formulas
 '''
 
 import re
-from molmass import Formula # Download Molmass.py and Elements.py from http://www.lfd.uci.edu/~gohlke
+from molmass import Formula
 
 def is_sponch(formula):
     '''
-    Checks if elements in the formula are limited to only S, P, O, N, C, and H.
-    Returns True if this is the case and False if not.
+    Checks if elements in the formula are limited to only S, P, O, N, C,
+    and H. Returns True if this is the case and False if not.
     
     Parameters
     ----------
     formula: string or dict
-        Molecular formula of compound. Check formula_split function desc. for limitations.
+        Molecular formula of compound. Check formula_split function desc.
+        for limitations.
     '''
     sponch = {'S', 'P', 'O', 'N', 'C', 'H'}
     formula = formula_split(formula)
@@ -29,8 +30,8 @@ def is_sponch(formula):
 
 def match(cs_object, formula, name):
     '''
-    Accepts a ChemSpider object and checks if its formula and name match the given values.
-    Returns True if this is the case and False if not.
+    Accepts a ChemSpider object and checks if its formula and name match
+    the given values. Returns True if this is the case and False if not.
     
     Parameters
     ----------
@@ -46,8 +47,9 @@ def match(cs_object, formula, name):
     ----------
     match: boolean
         True if both the name and formula match and False if not.\n
-        Note: if the ChemSpider compound doesn't have the same common name (the main name listed
-        at the top of the entry page), the name check will fail and this function will return False.
+        Note: if the ChemSpider compound doesn't have the same common name
+        (the main name listed at the top of the entry page), the name check
+        will fail and this function will return False.
     '''
     cs_formula = cs_object.molecular_formula.replace('{','').replace('}','').replace('_','')
     if type(formula) == dict: # cs_formula type must match the formula type given
@@ -58,9 +60,9 @@ def match(cs_object, formula, name):
 
 def check_name(name1, name2):
     '''
-    Accepts two names and returns if they are the same, accounting for the similarity between
-    names like 'acetic acid' and 'acetate'. Not case sensitive. Returns True if they are
-    equivalent and False otherwise.
+    Accepts two names and returns if they are the same, accounting for
+    the similarity between names like 'acetic acid' and 'acetate'. Not
+    case sensitive. Returns True if they are equivalent and False otherwise.
     '''
     name1 = name1.lower()
     name2 = name2.lower()
@@ -77,42 +79,25 @@ def check_name(name1, name2):
 
 def check_formula(formula1, formula2):
     '''
-    Accepts two formulas of the same type (string or dictionary) and checks if they are the same.
-    Considers H and D to be the same element and ignores charges. Returns True if they match and
-    False otherwise.
+    Accepts two formulas (string or dictionary representation) and
+    checks if they are the same. Considers H and D to be the same element
+    and ignores charges. Returns True if they match and False otherwise.
     '''
-    if type(formula1) != type(formula2):
-            formula1 = formula_to_string(formula1)
-            formula2 = formula_to_string(formula2)
-    if type(formula1) == dict:
-        form1 = formula_split(formula_to_string(formula1).replace('D', 'H')) # To count D's as H's
-        form2 = formula_split(formula_to_string(formula2).replace('D', 'H'))
-    else:
+    if type(formula1) == str:
         if '+' in formula1:
             formula1 = formula1[:formula1.index('+')]
         if '-' in formula1:
             formula1 = formula1[:formula1.index('-')]
+        formula1 = formula_split(formula1)
+    
+    if type(formula1) == str: 
         if '+' in formula2:
             formula2 = formula2[:formula2.index('+')]
         if '-' in formula2:
             formula2 = formula2[:formula2.index('-')]
-        form1 = formula_split(formula1.replace('D', 'H')) # To count D's as H's
-        form2 = formula_split(formula2.replace('D', 'H'))
-    return cmp(form1, form2) == 0
-        
-def check_mass(mass1, mass2, max_percent_error):
-    ''' 
-    Accepts two mass values and returns if they are equal, within the passed percent error.
-    For a percent error > 100%, use % notation, not decimal notation. Otherwise, accepts decimal
-    and percent notation without error. Returns True if the masses are considered equal and False
-    otherwise.
-    '''
-    if max_percent_error > 1:
-        max_percent_error = max_percent_error / 100.0
-    if mass2 * (1 + max_percent_error) > mass1 and mass2 * (1 - max_percent_error) < mass1:
-        return True
-    else:
-        return False
+        formula2 = formula_split(formula2)
+    
+    return formula1 == formula2
 
 def calculate_mass(formula, isotope=True):
     '''
@@ -123,8 +108,8 @@ def calculate_mass(formula, isotope=True):
     formula: string or dict
         Molecular formula of compound
     isotope: boolean
-        If True, calulates the isotopic mass. If False, calculates the average mass. Default
-        is True.
+        If True, calulates the isotopic mass. If False, calculates the
+        average mass. Default is True.
     '''
     formula = formula_to_string(formula)
     if isotope:
@@ -134,8 +119,8 @@ def calculate_mass(formula, isotope=True):
         
 def insert_one(string):
     '''
-    Helper method for formula_split. Goes through a string formula and adds ones after elements
-    with an abundance of one.
+    Helper method for formula_split. Goes through a string formula and
+    adds ones after elements with an abundance of one.
     '''
     i = 0
     while i < len(string) - 1:
@@ -148,13 +133,14 @@ def insert_one(string):
 
 def process_parenthesis(formula):
     '''
-    If a formula contains parentheses, removes them. Example: C(CH3)3 as an input would return
-    CCH3CH3CH3. More than one layer of parentheses causes an error.
+    If a formula contains parentheses, removes them. Example: C(CH3)3 as an
+    input would return CCH3CH3CH3. More than one layer of parentheses causes
+    an error.
     '''
     findparen = ''.join([i for i in formula if not i.isdigit()])
     findparen = ''.join([i for i in findparen if not i.isalpha()])
-    if findparen.find("((") != -1:
-        print "Error: Given formula too complex."
+    if findparen.find('((') != -1:
+        print('Error: Given formula too complex.')
         return None
     else:
         form2 = formula.split("(")
@@ -163,7 +149,7 @@ def process_parenthesis(formula):
             new = form2[i].split(")")
             for i in new:
                 new_formula.append(i)
-        new_formula = filter(None, new_formula)
+        new_formula = list(filter(None, new_formula))
         for i in range(0, len(new_formula)-1):  
             piece = str(new_formula[i+1])
             check = piece[:2]
@@ -182,8 +168,9 @@ def process_parenthesis(formula):
 
 def process_periods(formula):
     '''
-    If a formula contains periods, removes them. Example: C.3CH3 as an input would return
-    CCH3CH3CH3.
+    If a formula contains periods, removes them. Example: C.3CH3 as an
+    input would return CCH3CH3CH3. This comes from the format used by
+    InChIs.
     '''
     formula_list = formula.split(".")
     new_form = ""
@@ -210,6 +197,10 @@ def _add_deut(l, formula):
     return formula
    
 def inchi_formula(inchi):
+    '''
+    Generate a formula from an InChI. Note, it's probably best to do this
+    with a tool like RDKit.
+    '''
     formula = formula_split(inchi.split('/')[1])
     
     # Check Isotope Layer
@@ -245,6 +236,38 @@ def inchi_formula(inchi):
         formula = add_element(formula, 'H', int(isotope[0][1:]))
     return formula
 
+def _add_formula(dictionary, formula, mult=1):
+    '''
+    Accepts a formula dictionary and adds or removes a new formula to it.
+    
+    Parameters
+    ----------
+    dictionary: dict
+        Formula dictionary (ex: one returned from formula_split)
+    formula: string or dictionary
+        Formula to be added/removed
+    mult: int
+        Number of times for formula to be added/removed. If positive,
+        adds the final formula. If negative, removes.
+    
+    Returns
+    ---------
+    new_dictionary: dict
+        Formula dictionary with the given formula added/removed.
+    '''
+    if type(formula) != str or len(formula) == 0:
+        return dictionary
+    
+    new = formula_split(formula)
+    
+    for elem, abundance in new.items():
+        dictionary = add_element(dictionary, elem, mult * abundance)
+        
+        # If this element/abund could not be removed, return None
+        if dictionary is None:
+            return None
+
+    return dictionary
 
 def add_formula(dictionary, formula):
     '''
@@ -254,21 +277,38 @@ def add_formula(dictionary, formula):
     ----------
     dictionary: dict
         Formula dictionary (ex: one returned from formula_split)
+    formula: string or dictionary
+        Formula to be added
     
     Returns
     ---------
     new_dictionary: dict
-        Formula dictionary with the new formula added.
+        Formula dictionary with the given formula added.
     '''
-    new = formula_split(formula)
-    for elem, abundance in new.iteritems():
-        dictionary = add_element(dictionary, elem, abundance)
-    return dictionary
+    return _add_formula(dictionary, formula, mult=1)
+
+def remove_formula(dictionary, formula):
+    '''
+    Accepts a formula dictionary and removes a formula from it.
+    
+    Parameters
+    ----------
+    dictionary: dict
+        Formula dictionary (ex: one returned from formula_split)
+    formula: string or dictionary
+        Formula to be removed
+    
+    Returns
+    ---------
+    new_dictionary: dict
+        Formula dictionary with the given formula removed.
+    '''
+    return _add_formula(dictionary, formula, mult=-1)
 
 def add_element(dictionary, element, number):
     '''
-    Adds an element to passed dictionary. If the element is already there, simply adds to its
-    abundance.
+    Adds an element to passed dictionary. If the element is already there,
+    simply adds to its abundance.
     
     Parameters
     ----------
@@ -284,25 +324,28 @@ def add_element(dictionary, element, number):
     new_dictionary: dict
         Formula dictionary with the new element added.
     '''
-    if dictionary.has_key(element):
+    if element in dictionary:
         dictionary[element] = dictionary[element] + number
     else:
         dictionary[element] = number
     if dictionary[element] == 0:
         del dictionary[element]
+    elif dictionary[element] < 0:
+        return None
     return dictionary
 
 def formula_split(formula):
     '''
-    Accepts a formula in the form of a string and splits it into its elements and their
-    respective abundances. Assumes the given formula has at least one element. If the passed
-    formula is already in dictionary form, simply returns that same dictionary.
+    Accepts a formula in the form of a string and splits it into its
+    elements and their respective abundances. Assumes the given formula
+    has at least one element. If the passed formula is already in dictionary
+    form, simply returns that same dictionary.
     
     Limitations
     ----------
-    Can process formulas that contain up to one layer of parentheses and periods. More than one
-    layer of parentheses, x's, and non-alphanumeric symbols will cause errors in a way that can
-    cause this to crash.
+    Can process formulas that contain up to one layer of parentheses and
+    periods. More than one layer of parentheses, x's, and non-alphanumeric
+    symbols will cause this to crash.
     
     Parameters
     ----------
@@ -324,8 +367,8 @@ def formula_split(formula):
         elements = re.split(r'[0,1,2,3,4,5,6,7,8,9]\s*', formula)
         elements = filter(None, elements)
         numbers = re.findall( r'\d+\.*\d*', formula)
-        elements = map(str, elements)
-        numbers = map(int, numbers)
+        elements = list(map(str, elements))
+        numbers = list(map(int, numbers))
         formula = {elements[0] : numbers[0]}
         for i in range(1, len(elements)):
             formula = add_element(formula, elements[i], numbers[i])
@@ -333,10 +376,10 @@ def formula_split(formula):
     
 def formula_to_string(formula):
     '''
-    Accepts a formula and converts it into string form. If it is already a string, simply returns
-    the same formula.
+    Accepts a formula and converts it into string form. If it is already a
+    string, simply returns the same formula.
     '''
-    if type(formula) == str or type(formula) == unicode:
+    if type(formula) == str:
         return str(formula)
     string = ''
     for key in sorted(formula):
@@ -347,4 +390,5 @@ def formula_to_string(formula):
             string += key
         else:
             string += key + str(n)
+            
     return string

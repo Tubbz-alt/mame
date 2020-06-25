@@ -1,0 +1,15 @@
+Points = [9.81, 2.07, 0.04, 4.35, 3.29, 0.54, 4.41]
+Adducts = [[M+H], [M-H], [M+Na]]
+MinInt = 1
+MinimumSamples = 3
+MaximumBlanks = 0
+BlankIndicator = None
+RequireCCSMatch = False
+MassError = 20
+CCSError = 10
+HighMS2Thresh = 800
+Lib_MS2_ValueSplit = ,
+Lib_MS2_LineSplit = ;
+MS2_10V_Indicator = 10V
+MS2_20V_Indicator = 20V
+MS2_40V_Indicator = 40V
